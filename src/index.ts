@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import './lib/mongo'
 
 import createApolloGraphqlServer from "./graphql";
+import UserService from "./services/user";
 
 dotenv.config();
 
@@ -19,7 +20,20 @@ async function init() {
     res.json({ message: "Server is up and running" });
   });
 
-  app.use("/graphql", expressMiddleware(await createApolloGraphqlServer()));
+  app.use("/graphql", expressMiddleware(await createApolloGraphqlServer(),
+  {context:async({req})=>{
+       const token=req.headers.token
+      try {
+        const user=await UserService.decodeJWTToken(token as string)
+        return {user}
+      } catch (error) {
+        return {}
+        
+      }
+      
+    }
+
+  }));
 
   app.listen(PORT, () => console.log(`Server started at PORT:${PORT}`));
 }

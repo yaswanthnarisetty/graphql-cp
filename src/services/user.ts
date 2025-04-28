@@ -24,6 +24,9 @@ class UserService {
     return hashedPassword;
   }
 
+  public static getUserById(id: string) {
+    return User.findById(id);
+  }
 
 
   public static async createUser(payload: CreateUserPayload) {
@@ -62,11 +65,16 @@ class UserService {
     const hashedPassword = UserService.generateHash(salt, password);
     if (hashedPassword !== user.password) throw new Error("Incorrect password");
     const token = JWT.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, email: user.email },
       jwt_secret,
       { expiresIn: "7d" }
     );
     return token;
+  }
+
+  public static decodeJWTToken(token: string) {
+    const decoded = JWT.verify(token, jwt_secret);
+    return decoded;
   }
 }
 
